@@ -23,6 +23,7 @@ def run(json_input, output):
     mode_arg = json_input['args']['mode']
     try:
         client = StashInterface(json_input["server_connection"])
+        # Personnal things
         if mode_arg == "JAV":
             findScene(client, "1. JAV")
         if mode_arg == "Anime":
@@ -37,22 +38,25 @@ def run(json_input, output):
 def findScene(client, tags_name):
     backupDB(client)
 
-    log.LogDebug(f"Searching all scenes...")
+    log.LogDebug(f"Searching scenes...")
 
     tags_id = client.findTagIdWithName(tags_name)
-    log.LogDebug("Your tags ID:" + str(tags_id))
+    log.LogDebug("Your tag ID:" + str(tags_id))
 
     scenes = client.findScenesByTags([tags_id])
-    log.LogDebug("Nbr Scenes:" + str(len(scenes)))
+    log.LogDebug("Nbr Scenes with this tag:" + str(len(scenes)))
 
-    # Get ID of the tags writed by this plugin
+    # Get the ID of the tags writed by this plugin
     pluginsTagsID = get_scrape_tag(client)
     for scene_fromTags in scenes:
         log.LogDebug("Scene:" + str(scene_fromTags))
+        # Scene need to have a url set
         if scene_fromTags['url'] == None:
             continue
+        # Only wanted to use the scraper Javlibrary
         if 'javlibrary' not in scene_fromTags['url']:
             continue
+        # get_scrape_tag only give URL and ID so using getSceneById to get more information
         scene = client.getSceneById(scene_fromTags['id'])
 
         # Current tags present in scene
@@ -67,9 +71,9 @@ def findScene(client, tags_name):
                 sceneTags.append(tags['id'])
         if AlreadyWatch == 1:
             continue
-
+        # I guess URL is useless since check above
         if scene['url'] != None and scene['tags'] != None:
-            # Scraping
+            # Scraping scene (What happend if the URL don't have scraper ?)
             scrapedData = client.scrapeSceneURL(scene['url'])
             if scrapedData == None:
                 log.LogDebug("Error when scraping ?")
@@ -79,13 +83,14 @@ def findScene(client, tags_name):
                 log.LogDebug("No tags from Scraping")
                 continue
             for tags in scrapedData['tags']:
+                # Only take tags that already exist in Database
                 if tags['stored_id'] == None:
                     continue
                 scrapedTags.append(tags['stored_id'])
+            # Probably useless ?
             if not scrapedTags:
                 log.LogDebug("No tags from Scraping")
                 continue
-
 
             # Compare
             log.LogDebug("Current Tags:" + str(sceneTags))
@@ -130,19 +135,18 @@ def findScene(client, tags_name):
                 scene_data['rating'] = scene.get('rating')
 
             if not new_tags:
+                # No new tags but we still put our custom tags to don't scan it again.
                 tag_ids = []
                 for t in scene.get('tags'):
                     tag_ids.append(t.get('id'))
                 # Putting our custom tag
                 tag_ids.append(pluginsTagsID)
                 scene_data['tag_ids'] = tag_ids
-                client.updateScene(scene_data)
             else:
+                new_tags.append(pluginsTagsID)
                 scene_data['tag_ids'] = new_tags + sceneTags
-                client.updateScene(scene_data)
                 log.LogDebug("Updated scene: " + str(scene.get('title')))
-                with open('ReScrapeLog.txt', 'a') as f:
-                    f.write("Updated scene: " + str(scene.get('title')))
+            client.updateScene(scene_data)
             # break
 
 def get_scrape_tag(client):
