@@ -1,0 +1,17 @@
+name: Tag Scraping Plugins
+description: "Rescrape to find missed tags."
+version: 1.0
+exec:
+  - python
+  - "{pluginDir}/ReScrape_Tags.py"
+interface: raw
+tasks:
+  - name: Rescrape Tags JAV
+    defaultArgs:
+      mode: JAV
+  - name: Rescrape Tags Western
+    defaultArgs:
+      mode: Western
+  - name: Rescrape Tags Anime
+    defaultArgs:
+      mode: Anime
