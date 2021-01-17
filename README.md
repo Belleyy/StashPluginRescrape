@@ -1,2 +1,3 @@
 # StashPluginRescrape
-Stash Plugins to Rescrape Tags/Details from URL
+
+Made this plugins to rescrape URL to get Tags/Details that i don't have in my database before.
