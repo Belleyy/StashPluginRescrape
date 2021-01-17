@@ -56,17 +56,24 @@ def findScene(client, tags_name):
         scene = client.getSceneById(scene_fromTags['id'])
 
         # Current tags present in scene
+        AlreadyWatch=0
         sceneTags = []
         for tags in scene.get('tags'):
             if tags['id'] == pluginsTagsID:
                 log.LogDebug("Already watched")
-                continue
+                AlreadyWatch=1
+                break
             else:
                 sceneTags.append(tags['id'])
+        if AlreadyWatch == 1:
+            continue
 
         if scene['url'] != None and scene['tags'] != None:
             # Scraping
             scrapedData = client.scrapeSceneURL(scene['url'])
+            if scrapedData == None:
+                log.LogDebug("Error when scraping ?")
+                continue
             scrapedTags = []
             if scrapedData['tags'] == None:
                 log.LogDebug("No tags from Scraping")
