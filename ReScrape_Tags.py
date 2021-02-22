@@ -36,8 +36,6 @@ def run(json_input, output):
 
 
 def findScene(client, tags_name):
-    backupDB(client)
-
     log.LogDebug(f"Searching scenes...")
 
     tags_id = client.findTagIdWithName(tags_name)
@@ -158,15 +156,5 @@ def get_scrape_tag(client):
         client.createTagWithName(tag_name)
         tag_id = client.findTagIdWithName(tag_name)
         return tag_id
-
-
-def backupDB(client):
-    configuration = client.getConfiguration()
-    dbPath = configuration['general']['databasePath']
-    dbName = os.path.basename(dbPath) + "_ReScrape.sqlite"
-    dbDir = os.path.dirname(dbPath)  # Get filename
-    newPath=dbDir + "\\" + dbName
-    log.LogDebug("Making backup of your database...")
-    copyfile(dbPath, newPath)
 
 main()
